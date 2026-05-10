@@ -1,11 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import DbPanel, { DbTable } from "../components/DbPanel.jsx";
-
-const SERVER_URLS = [
-  import.meta.env.VITE_BACKEND_1_URL || "http://localhost:3001",
-  import.meta.env.VITE_BACKEND_2_URL || "http://localhost:3002",
-  import.meta.env.VITE_BACKEND_3_URL || "http://localhost:3003",
-];
+import { SERVER_URLS } from "../utils/serverUrls.js";
 const BASE = (i) => `${SERVER_URLS[i]}/scenarios/partitions`;
 
 const INIT_NODES = [

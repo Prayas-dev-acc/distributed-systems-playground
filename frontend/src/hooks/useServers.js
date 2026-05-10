@@ -1,11 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { io } from "socket.io-client";
-
-const SERVER_URLS = [
-  import.meta.env.VITE_BACKEND_1_URL || "http://localhost:3001",
-  import.meta.env.VITE_BACKEND_2_URL || "http://localhost:3002",
-  import.meta.env.VITE_BACKEND_3_URL || "http://localhost:3003",
-];
+import { SERVER_URLS } from "../utils/serverUrls.js";
 
 export function useServers() {
   const [serverHealth, setServerHealth] = useState(
@@ -18,7 +13,7 @@ export function useServers() {
       uptime: 0,
     }))
   );
-  const [sockets, setSockets] = useState([]);
+  const [sockets, setSockets]       = useState([]);
   const [requestLogs, setRequestLogs] = useState([]);
 
   const pollHealth = useCallback(async () => {
@@ -42,8 +37,13 @@ export function useServers() {
     pollHealth();
     const interval = setInterval(pollHealth, 5000);
 
-    const newSockets = SERVER_URLS.map((url) => {
-      const socket = io(url, { transports: ["websocket"] });
+    const newSockets = SERVER_URLS.map((url, i) => {
+      // If URL is a proxy path (relative, starts with /), connect Socket.io
+      // to the current origin with a path-based prefix so it goes through Vite proxy.
+      const socket = url.startsWith("/")
+        ? io(window.location.origin, { path: `${url}/socket.io`, transports: ["websocket"] })
+        : io(url, { transports: ["websocket"] });
+
       socket.on("request_log", (entry) => {
         setRequestLogs((prev) => [entry, ...prev].slice(0, 100));
       });

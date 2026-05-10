@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import DbPanel, { DbTable } from "../components/DbPanel.jsx";
+import { SERVER_URL } from "../utils/serverUrls.js";
 
-const SERVER_URL = import.meta.env.VITE_BACKEND_1_URL || "http://localhost:3001";
 const BASE = `${SERVER_URL}/scenarios/idempotency`;
 
 function uuid() {

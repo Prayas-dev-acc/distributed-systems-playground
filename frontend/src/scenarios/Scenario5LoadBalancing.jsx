@@ -1,11 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { DbTable } from "../components/DbPanel.jsx";
-
-const SERVER_URLS = [
-  import.meta.env.VITE_BACKEND_1_URL || "http://localhost:3001",
-  import.meta.env.VITE_BACKEND_2_URL || "http://localhost:3002",
-  import.meta.env.VITE_BACKEND_3_URL || "http://localhost:3003",
-];
+import { SERVER_URLS } from "../utils/serverUrls.js";
 const META = [
   { id: "server-1", port: 3001, urlIdx: 0 },
   { id: "server-2", port: 3002, urlIdx: 1 },
