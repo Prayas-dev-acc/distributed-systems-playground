@@ -1,0 +1,107 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: playground
+      POSTGRES_PASSWORD: playground
+      POSTGRES_DB: playground
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/src/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U playground"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend-1:
+    build: ./backend
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      SERVER_ID: server-1
+      DATABASE_URL: postgresql://playground:playground@postgres:5432/playground
+      REDIS_URL: redis://redis:6379
+      PEER_1_URL: http://backend-1:3001
+      PEER_2_URL: http://backend-2:3002
+      PEER_3_URL: http://backend-3:3003
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend/src:/app/src
+    command: npm run dev
+
+  backend-2:
+    build: ./backend
+    ports:
+      - "3002:3002"
+    environment:
+      PORT: 3002
+      SERVER_ID: server-2
+      DATABASE_URL: postgresql://playground:playground@postgres:5432/playground
+      REDIS_URL: redis://redis:6379
+      PEER_1_URL: http://backend-1:3001
+      PEER_2_URL: http://backend-2:3002
+      PEER_3_URL: http://backend-3:3003
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend/src:/app/src
+    command: npm run dev
+
+  backend-3:
+    build: ./backend
+    ports:
+      - "3003:3003"
+    environment:
+      PORT: 3003
+      SERVER_ID: server-3
+      DATABASE_URL: postgresql://playground:playground@postgres:5432/playground
+      REDIS_URL: redis://redis:6379
+      PEER_1_URL: http://backend-1:3001
+      PEER_2_URL: http://backend-2:3002
+      PEER_3_URL: http://backend-3:3003
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend/src:/app/src
+    command: npm run dev
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_BACKEND_1_URL: http://localhost:3001
+      VITE_BACKEND_2_URL: http://localhost:3002
+      VITE_BACKEND_3_URL: http://localhost:3003
+    volumes:
+      - ./frontend/src:/app/src
+    command: npm run dev -- --host
+
+volumes:
+  postgres_data:
