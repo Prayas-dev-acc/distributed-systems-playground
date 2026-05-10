@@ -116,10 +116,13 @@ export default function LandingPage() {
             with PostgreSQL and Redis.
           </p>
 
-          <p className="text-tertiary text-sm">
-            Keeping 3 servers + database + cache running 24/7 costs more than my coffee budget,
-            so the infrastructure runs on-demand. Request a live demo below.
-          </p>
+          <div className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-card border border-amber-500/20 bg-amber-500/5 text-sm mx-auto">
+            <span className="text-lg">☕</span>
+            <span className="text-amber-300/90">
+              Keeping 3 servers + database + cache running 24/7 costs more than my coffee budget
+              — so the infrastructure runs <span className="font-semibold text-amber-300">on-demand</span>.
+            </span>
+          </div>
 
           <div className="flex items-center justify-center gap-3 flex-wrap pt-2">
             <a href="#request-demo" className="btn-primary px-6 py-2.5 text-sm">
