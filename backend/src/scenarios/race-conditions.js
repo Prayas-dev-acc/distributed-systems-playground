@@ -37,6 +37,16 @@ export function createRouter({ io, SERVER_ID }) {
     }
   });
 
+  // ── GET /db-state ────────────────────────────────────────────────────────────
+  router.get("/db-state", async (_req, res) => {
+    try {
+      const { rows } = await query("SELECT id, value FROM counter");
+      res.json({ rows });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // ── POST /reset ──────────────────────────────────────────────────────────────
   router.post("/reset", async (_req, res) => {
     try {

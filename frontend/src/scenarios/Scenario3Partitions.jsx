@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import DbPanel, { DbTable } from "../components/DbPanel.jsx";
 
 const SERVER_URLS = [
   import.meta.env.VITE_BACKEND_1_URL || "http://localhost:3001",
@@ -398,6 +399,30 @@ export default function Scenario3Partitions({ sockets }) {
           <p className="text-tertiary text-center">CP system — like <span className="text-secondary">etcd, ZooKeeper, Consul</span></p>
         </div>
       </div>
+
+      {/* ── DB State ──────────────────────────────────────────────────────── */}
+      <DbPanel
+        title="scenario3:* keys"
+        dbType="redis"
+        endpoint={`${SERVER_URLS[0]}/scenarios/partitions/cluster-state`}
+        pollMs={1500}
+      >
+        {(data) => (
+          <DbTable
+            columns={["key", "value"]}
+            rows={data?.rows}
+            formatters={{
+              key:   (v) => <span className="text-tertiary">{v}</span>,
+              value: (v, row) =>
+                row.key === "leader"
+                  ? <span className="text-yellow-400 font-bold">{v}</span>
+                  : row.key === "term"
+                  ? <span className="text-blue-400">{v}</span>
+                  : <span className="text-primary">"{v}"</span>,
+            }}
+          />
+        )}
+      </DbPanel>
     </div>
   );
 }

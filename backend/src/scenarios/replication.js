@@ -104,6 +104,18 @@ export function createRouter({ io, SERVER_ID }) {
 
   const router = Router();
 
+  // ── GET /db-state ────────────────────────────────────────────────────────────
+  router.get("/db-state", async (_req, res) => {
+    try {
+      const { rows } = await query(
+        "SELECT id, value, updated_at FROM primary_data WHERE id = 1"
+      );
+      res.json({ rows });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // ── GET /status ─────────────────────────────────────────────────────────────
   router.get("/status", async (_req, res) => {
     try {

@@ -145,6 +145,26 @@ export function createRouter({ io, SERVER_ID }) {
   // ── Router ────────────────────────────────────────────────────────────────────
   const router = Router();
 
+  // GET /cluster-state — Redis keys as key-value rows for DB inspector
+  router.get("/cluster-state", async (_req, res) => {
+    try {
+      const [leader, termVal, value] = await Promise.all([
+        redis.get(LEADER_KEY),
+        redis.get(TERM_KEY),
+        redis.get(VALUE_KEY),
+      ]);
+      res.json({
+        rows: [
+          { key: "leader",  value: leader   ?? "(none)" },
+          { key: "term",    value: termVal  ?? "0"      },
+          { key: "cluster_value", value: value ?? "(none)" },
+        ],
+      });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // GET /status
   router.get("/status", async (_req, res) => {
     try {

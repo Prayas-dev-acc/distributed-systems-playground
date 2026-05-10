@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import DbPanel, { DbTable } from "../components/DbPanel.jsx";
 
 const SERVER_URLS = [
   import.meta.env.VITE_BACKEND_1_URL || "http://localhost:3001",
@@ -450,6 +451,24 @@ export default function Scenario4Replication({ sockets }) {
           </p>
         </div>
       </div>
+
+      {/* ── DB State ──────────────────────────────────────────────────────── */}
+      <DbPanel
+        title="primary_data"
+        endpoint={`${SERVER_URLS[0]}/scenarios/replication/db-state`}
+        pollMs={1000}
+      >
+        {(data) => (
+          <DbTable
+            columns={["id", "value", "updated_at"]}
+            rows={data?.rows}
+            formatters={{
+              value:      (v) => <span className="text-primary font-bold">"{v}"</span>,
+              updated_at: (v) => v ? new Date(v).toLocaleTimeString() : "—",
+            }}
+          />
+        )}
+      </DbPanel>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import DbPanel, { DbTable } from "../components/DbPanel.jsx";
 
 const SERVER_URL = import.meta.env.VITE_BACKEND_1_URL || "http://localhost:3001";
 const BASE = `${SERVER_URL}/scenarios/idempotency`;
@@ -442,6 +443,37 @@ export default function Scenario2Idempotency({ sockets }) {
         <div className="p-4">
           <HistoryTable transfers={history} retriedIds={retriedIds} />
         </div>
+      </div>
+
+      {/* ── DB State ──────────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 gap-4">
+        <DbPanel title="accounts" endpoint={`${BASE}/accounts`} pollMs={1500}>
+          {(data) => (
+            <DbTable
+              columns={["name", "balance"]}
+              rows={data?.accounts}
+              formatters={{
+                balance: (v) => <span className={v < 500 ? "text-amber-400" : "text-emerald-400"}>${v}</span>,
+              }}
+            />
+          )}
+        </DbPanel>
+
+        <DbPanel title="transfer_requests" endpoint={`${BASE}/transfer-history`} pollMs={2000}>
+          {(data) => (
+            <DbTable
+              columns={["request_id", "amount", "status"]}
+              rows={data?.transfers?.slice(0, 8)}
+              formatters={{
+                request_id: (v) => <span className="text-tertiary">{v?.slice(0, 8)}…</span>,
+                amount:     (v) => `$${v}`,
+                status:     (v) => (
+                  <span className={v === "completed" ? "text-emerald-400" : "text-amber-400"}>{v}</span>
+                ),
+              }}
+            />
+          )}
+        </DbPanel>
       </div>
     </div>
   );

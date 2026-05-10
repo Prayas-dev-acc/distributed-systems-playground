@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import DbPanel, { DbTable } from "../components/DbPanel.jsx";
 
 const SERVER_URLS = [
   import.meta.env.VITE_BACKEND_1_URL || "http://localhost:3001",
@@ -283,6 +284,23 @@ export default function Scenario1RaceConditions({ serverHealth, sockets }) {
           </div>
         </div>
       </div>
+
+      {/* ── DB State ──────────────────────────────────────────────────────── */}
+      <DbPanel
+        title="counter"
+        endpoint={`${SERVER_URLS[0]}/scenarios/race-conditions/db-state`}
+        pollMs={1000}
+      >
+        {(data) => (
+          <DbTable
+            columns={["id", "value"]}
+            rows={data?.rows}
+            formatters={{
+              value: (v) => <span className="text-primary font-bold text-sm">{v}</span>,
+            }}
+          />
+        )}
+      </DbPanel>
     </div>
   );
 }

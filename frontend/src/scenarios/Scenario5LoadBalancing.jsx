@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { DbTable } from "../components/DbPanel.jsx";
 
 const SERVER_URLS = [
   import.meta.env.VITE_BACKEND_1_URL || "http://localhost:3001",
@@ -349,6 +350,67 @@ export default function Scenario5LoadBalancing({ sockets }) {
             rejoins the healthy pool on the next health check cycle (≤3s).
           </p>
         </div>
+      </div>
+
+      {/* ── Server Stats (in-memory, no DB) ───────────────────────────────── */}
+      <ServerStatsPanel serverUrls={SERVER_URLS} />
+    </div>
+  );
+}
+
+function ServerStatsPanel({ serverUrls }) {
+  const [rows, setRows] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+    const poll = async () => {
+      const results = await Promise.allSettled(
+        serverUrls.map((url) =>
+          fetch(`${url}/scenarios/load-balancing/stats`, { signal: AbortSignal.timeout(2000) })
+            .then((r) => r.ok ? r.json() : null).catch(() => null)
+        )
+      );
+      if (!mounted) return;
+      setRows(
+        results.map((r, i) => {
+          const d = r.status === "fulfilled" ? r.value : null;
+          return {
+            server:   `server-${i + 1}`,
+            status:   d ? (d.isAlive ? "alive" : "killed") : "unreachable",
+            requests: d?.requestCount ?? "—",
+            uptime:   d ? `${d.uptime}s` : "—",
+          };
+        })
+      );
+    };
+    poll();
+    const id = setInterval(poll, 2000);
+    return () => { mounted = false; clearInterval(id); };
+  }, [serverUrls]);
+
+  return (
+    <div className="rounded-card border border-subtle bg-card overflow-hidden">
+      <div className="px-3 py-2 border-b border-subtle flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="badge badge-gray text-2xs text-tertiary">In-memory</span>
+          <span className="font-mono text-xs text-secondary">server stats</span>
+        </div>
+        <span className="text-tertiary text-2xs">Load balancing uses no persistent storage</span>
+      </div>
+      <div className="overflow-x-auto">
+        <DbTable
+          columns={["server", "status", "requests", "uptime"]}
+          rows={rows}
+          formatters={{
+            server: (v) => <span className="text-secondary">{v}</span>,
+            status: (v) => (
+              <span className={v === "alive" ? "text-emerald-400" : v === "killed" ? "text-red-400" : "text-tertiary"}>
+                {v}
+              </span>
+            ),
+            requests: (v) => <span className="text-primary">{v}</span>,
+          }}
+        />
       </div>
     </div>
   );
