@@ -1,35 +1,32 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
 import MainApp from "./MainApp.jsx";
 import LandingPage from "./components/LandingPage.jsx";
 
-const CHECK_URLS = [
+const SERVER_URLS = [
   import.meta.env.VITE_BACKEND_1_URL || "http://localhost:3001",
   import.meta.env.VITE_BACKEND_2_URL || "http://localhost:3002",
   import.meta.env.VITE_BACKEND_3_URL || "http://localhost:3003",
 ];
 
-export default function App() {
-  const [searchParams] = useSearchParams();
-  const [isLive, setIsLive]         = useState(false);
-  const [isChecking, setIsChecking] = useState(true);
+// Read ?live=true directly — no router dependency, works on first render
+const forceShow = new URLSearchParams(window.location.search).get("live") === "true";
 
-  const forceShow = searchParams.get("live") === "true";
+export default function App() {
+  // If forceShow, skip checking entirely — start as not-checking
+  const [isLive, setIsLive]         = useState(false);
+  const [isChecking, setIsChecking] = useState(!forceShow);
 
   useEffect(() => {
-    if (forceShow) { setIsChecking(false); return; }
+    if (forceShow) return; // already skipped via initial state
 
     const check = async () => {
       try {
         const results = await Promise.allSettled(
-          CHECK_URLS.map((url) =>
+          SERVER_URLS.map((url) =>
             fetch(`${url}/health`, { signal: AbortSignal.timeout(3000), mode: "cors" })
           )
         );
-        const anyAlive = results.some(
-          (r) => r.status === "fulfilled" && r.value.ok
-        );
-        setIsLive(anyAlive);
+        setIsLive(results.some((r) => r.status === "fulfilled" && r.value.ok));
       } catch {
         setIsLive(false);
       } finally {
@@ -38,7 +35,7 @@ export default function App() {
     };
 
     check();
-  }, [forceShow]);
+  }, []);
 
   if (isChecking) {
     return (
