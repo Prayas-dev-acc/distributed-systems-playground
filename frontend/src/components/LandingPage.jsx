@@ -153,7 +153,7 @@ export default function LandingPage() {
               className="space-y-4 max-w-md mx-auto"
             >
               <input type="hidden" name="_subject" value="Demo Request - Distributed Systems Playground" />
-              <input type="hidden" name="_next" value="/demo-requested" />
+              <input type="hidden" name="_next" value="https://frontend-roan-mu-42.vercel.app/demo-requested" />
 
               <div>
                 <label className="text-xs text-secondary block mb-1.5">Your email *</label>
